@@ -27,4 +27,23 @@ router.get("/list", (req, res) => {
   }
   getDoctors();
 });
+router.post("/delete", (req, res) => {
+  async function deleteone() {
+    let delt = await Medicine.findById(req.body.id).remove(function(
+      err,
+      result
+    ) {
+      if (!err) {
+        if (result.n > 0) {
+          res.send(JSON.stringify({ Data: result, status: "ok" }));
+        } else {
+          res.send(JSON.stringify({ Data: "Account dosent Exists" }));
+        }
+      } else {
+        res.send(err);
+      }
+    });
+  }
+  deleteone();
+});
 module.exports = router;

@@ -138,8 +138,11 @@ router.get("/details", (req, res) => {
   getDoctors();
 });
 router.post("/update", (req, res) => {
-  const str = req.body.refferedTo;
-  const newstr = str.slice(str.indexOf("(") + 1, -1);
+  let newstr = "";
+  if (req.body.refferedTo) {
+    const str = req.body.refferedTo;
+    newstr = str.slice(str.indexOf("(") + 1, -1);
+  }
   async function updateData() {
     let doc = await Patient.findById(req.body._id).exec((err, doc) => {
       if (err) {
@@ -150,7 +153,9 @@ router.post("/update", (req, res) => {
         doc.age = req.body.age;
         doc.mobile = req.body.mobile;
         doc.address = req.body.address;
-        doc.refferedTo = req.body.newstr;
+        doc.refferedTo = req.body.refferedTo
+          ? newstr
+          : "5d8a645f672afa3950c0e768";
         doc.medicines = req.body.medicines;
         doc.save((err, doc) => {
           if (err) {
@@ -167,5 +172,42 @@ router.post("/update", (req, res) => {
 router.post("/updatepic", (req, res) => {
   console.log(req.body);
   console.log(req.files);
+});
+router.post("/delete", (req, res) => {
+  let imgDir = "uploads/patients";
+  async function getone() {
+    let docs = await Patient.findById(req.body.id);
+    if (docs) {
+      if (docs.image) {
+        try {
+          fs.statSync(imgDir + docs.image.filename);
+          fs.unlinkSync(imgDir + docs.image.filename);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      deleteone();
+    } else {
+      console.log("no file to unlink");
+    }
+  }
+  async function deleteone() {
+    let delt = await Patient.findById(req.body.id).remove(function(
+      err,
+      result
+    ) {
+      if (!err) {
+        if (result.n > 0) {
+          res.send(JSON.stringify({ Data: result, status: "ok" }));
+        } else {
+          res.send(JSON.stringify({ Data: "Account dosent Exists" }));
+        }
+      } else {
+        res.send(err);
+      }
+    });
+  }
+
+  getone();
 });
 module.exports = router;

@@ -68,7 +68,6 @@ router.post("/add", upload.single("myImage"), function(req, res, next) {
 });
 router.post("/delete", (req, res) => {
   let imgDir = "uploads/";
-  let doctorid = "";
   async function getone() {
     let docs = await Doctor.findById(req.body.id);
     if (docs) {
