@@ -12,6 +12,7 @@ var PatientsSchema = new Schema({
   age: String,
   medicines: Array,
   disease: String,
+  cnic: String,
   refferedTo: {
     type: Schema.Types.ObjectId,
     ref: "Doctor"

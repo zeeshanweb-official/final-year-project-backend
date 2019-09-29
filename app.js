@@ -8,6 +8,8 @@ mongoose
     console.log("Connected to MongoDB");
   })
   .catch(err => console.log("could not Connect to MONGODB err: " + err));
+mongoose.set("useCreateIndex", true);
+mongoose.set("useFindAndModify", false);
 const fs = require("fs");
 const app = express();
 const bodyParser = require("body-parser");
@@ -48,8 +50,8 @@ app.get("/images/:image", function(req, res) {
     fs.statSync(imgDir + req.params.image);
     res.sendFile(imgDir + req.params.image, { root: __dirname });
   } catch (e) {
-    fs.statSync(imgDir + "defaultimage.jpg");
-    res.sendFile(imgDir + "defaultimage.jpg", { root: __dirname });
+    fs.statSync(imgDir + "defaultimage.png");
+    res.sendFile(imgDir + "defaultimage.png", { root: __dirname });
   }
 });
 app.get("/extrafiles/:image", function(req, res) {
@@ -58,8 +60,8 @@ app.get("/extrafiles/:image", function(req, res) {
     fs.statSync(imgDir + req.params.image);
     res.sendFile(imgDir + req.params.image, { root: __dirname });
   } catch (e) {
-    fs.statSync(imgDir + "defaultimage.jpg");
-    res.sendFile(imgDir + "defaultimage.jpg", { root: __dirname });
+    fs.statSync(imgDir + "defaultimage.png");
+    res.sendFile(imgDir + "defaultimage.png", { root: __dirname });
   }
 });
 app.post("/getdata", function(req, res) {

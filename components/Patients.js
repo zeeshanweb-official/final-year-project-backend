@@ -15,8 +15,19 @@ var storage = multer.diskStorage({
     saveimage();
   }
 });
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("File format should be PNG,JPG,JPEG"), false); // if validation failed then generate error
+  }
+};
 
-var upload = multer({ storage: storage });
+var upload = multer({ storage: storage, fileFilter: fileFilter });
 router.post("/add", upload.single("myImage"), function(req, res, next) {
   const str = req.body.refferedTo;
   const newstr = str.slice(str.indexOf("(") + 1, -1);
@@ -31,6 +42,7 @@ router.post("/add", upload.single("myImage"), function(req, res, next) {
     medicines: req.body.medicines,
     disease: req.body.disease,
     refferedTo: newstr,
+    cnic: req.body.cnic,
     image: req.file
   });
   patient.save((err, obj) => {
@@ -71,7 +83,7 @@ router.post("/patientswithdocs", (req, res) => {
         async function newdocs(params) {
           let docs = [];
           await result.map(item => {
-            if (typeof item.extraFiles === "object") {
+            if (item.extraFiles.length>0) {
               docs.push(item);
             }
           });
@@ -106,7 +118,7 @@ router.post("/UploadLabDocs", upload.any(), function(req, res, next) {
   async function getDoctors() {
     Patient.findOneAndUpdate(
       { _id: req.body.id },
-      { $push: { extraFiles: req.files[0].filename } },
+      { $push: { extraFiles: { labDocs: req.files[0].filename } } },
       { new: true },
       (err, doc) => {
         if (err) {
@@ -127,8 +139,7 @@ router.get("/details", (req, res) => {
         password: 0,
         email: 0,
         phone: 0,
-        mobile: 0,
-        _id: 0
+        mobile: 0
       });
       res.send(docs);
     } catch (e) {
@@ -139,8 +150,8 @@ router.get("/details", (req, res) => {
 });
 router.post("/update", (req, res) => {
   let newstr = "";
-  if (req.body.refferedTo) {
-    const str = req.body.refferedTo;
+  if (req.body.refferedto) {
+    const str = req.body.refferedto;
     newstr = str.slice(str.indexOf("(") + 1, -1);
   }
   async function updateData() {
@@ -151,6 +162,7 @@ router.post("/update", (req, res) => {
         doc.firstname = req.body.firstname;
         doc.lastname = req.body.lastname;
         doc.age = req.body.age;
+        doc.cnic = req.body.cnic;
         doc.mobile = req.body.mobile;
         doc.address = req.body.address;
         doc.refferedTo = req.body.refferedTo
@@ -209,5 +221,22 @@ router.post("/delete", (req, res) => {
   }
 
   getone();
+});
+router.post("/DeleteLabDocs", (req, res) => {
+  async function deletePics() {
+    Patient.findOneAndUpdate(
+      { _id: req.body.patient },
+      { $pull: { extraFiles: req.body.file } },
+      { new: true },
+      (err, doc) => {
+        if (err) {
+          res.send("Something wrong when updating data!" + err);
+        } else {
+          res.send(doc);
+        }
+      }
+    );
+  }
+  deletePics();
 });
 module.exports = router;
